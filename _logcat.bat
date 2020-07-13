@@ -1,0 +1,1 @@
+adb -d logcat System.out:I *:S

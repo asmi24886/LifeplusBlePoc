@@ -1,0 +1,50 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.lifeplusblepoc">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <application
+      android:name=".MainApplication"
+      android:label="@string/app_name"
+      android:icon="@mipmap/ic_launcher"
+      android:roundIcon="@mipmap/ic_launcher_round"
+      android:allowBackup="false"
+      android:theme="@style/AppTheme">
+      <activity
+        android:name=".MainActivity"
+        android:label="@string/app_name"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
+        android:launchMode="singleTask"
+        android:windowSoftInputMode="adjustResize">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+      </activity>
+
+        <receiver android:name="UiBroadcastReceiver">
+            <intent-filter>
+                <action android:name="EVENT_START_BROADCAST">
+                </action>
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="LocalBroadcastReceiver">
+            <intent-filter>
+                <action android:name="EVENT_DELEGATE_PRINT_LOG">
+                </action>
+            </intent-filter>
+        </receiver>
+        <service
+            android:name="com.lifeplusblepoc.TestService"
+            android:enabled="true"
+            android:exported="false" >
+        </service>
+
+      <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
+    </application>
+
+</manifest>

@@ -1,0 +1,18 @@
+Event emitter
+===================
+https://brightinventions.pl/blog/write-native-in-react-native/
+https://www.tutorialspoint.com/android/android_broadcast_receivers.htm
+https://reactnative.dev/docs/native-modules-android
+https://stackoverflow.com/questions/6854127/filter-logcat-to-get-only-the-messages-from-my-application-in-android
+
+Service and service start
+===========================
+https://appdoc.app/artifact/cn.ransj.rn/react-native/0.38.b/com/facebook/react/bridge/ReactApplicationContext.html
+https://github.com/mathias5r/rn-heartbeat/blob/master/android/app/src/main/java/com/rnheartbeat/HeartbeartService.java
+
+Service binding and method exposure
+=======================================
+https://developer.android.com/guide/components/bound-services
+https://proandroiddev.com/deep-dive-into-android-services-4830b8c9a09
+https://www.techotopia.com/index.php/Android_Local_Bound_Services_%E2%80%93_A_Worked_Example
+
