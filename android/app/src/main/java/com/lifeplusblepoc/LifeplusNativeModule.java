@@ -31,7 +31,9 @@ public class LifeplusNativeModule extends ReactContextBaseJavaModule implements 
     public LifeplusNativeModule(@Nonnull ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
+        this.createAndRegisterBroadCastReceivers();
         LocalBroadcastEventEmitter.getInstance().setContext(this.reactContext);
+        System.out.println("LifeplusNativeModule constructor has been initiated successfully. Attached context to event emitters and event receivers.");
     }
 
     @Nonnull
@@ -43,27 +45,14 @@ public class LifeplusNativeModule extends ReactContextBaseJavaModule implements 
     @ReactMethod
     public void startService() {
 
-        if(hasEventsRegistered == true)
+        if(this.isServiceRunning == true)
             return;
 
         System.out.println("Start service called");
 
-        unRegisterBroadcastReceivers();
-
-        uiBroadcastReceiver     = new UiBroadcastReceiver(this.reactContext);
-        localBroadcastReceiver  =  new LocalBroadcastReceiver(this.reactContext);
-
-        registerBroadcastReceivers();
-        hasEventsRegistered = true;
-
-        if(isServiceRunning == true)
-            return;
-
         this.reactContext.startService(new Intent(this.reactContext, TestService.class));
-        isServiceRunning = true;
-
-        this.reactContext.bindService(new Intent(reactContext, TestService.class), serviceConnection, Context.BIND_AUTO_CREATE);
-
+        this.isServiceRunning = true;
+        this.reactContext.bindService(new Intent(this.getCurrentActivity(), TestService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @ReactMethod
@@ -72,62 +61,21 @@ public class LifeplusNativeModule extends ReactContextBaseJavaModule implements 
         System.out.println("Stop service called");
 
         try {
+
+            if(this._service != null && this.isServiceBound) {
+                this.reactContext.unbindService(serviceConnection);
+                this._service = null;
+                this.isServiceBound = false;
+                System.out.println("Unbinding of service done because stop service was called.");
+            }
+
+            System.out.println("Now going for stopping service");
             this.reactContext.stopService(new Intent(this.reactContext, TestService.class));
-            isServiceRunning = false;
+            this.isServiceRunning = false;
         }
         catch (Exception e) {
             e.printStackTrace();
-        }
-
-        unRegisterBroadcastReceivers();
-    }
-
-    @ReactMethod
-    private void testEmit() {
-
-        if(_service != null && isServiceBound) {
-            _service.emitEventStart();
-        }
-    }
-
-    @Override
-    public void onHostResume() {
-
-    }
-
-    @Override
-    public void onHostPause() {
-
-    }
-
-    @Override
-    public void onHostDestroy() {
-        unRegisterBroadcastReceivers();
-    }
-
-    private void registerBroadcastReceivers() {
-        IntentFilter filter1 = new IntentFilter();
-        filter1.addAction(AppEvents.START_BROADCAST);
-
-        IntentFilter filter2 = new IntentFilter();
-        filter2.addAction(AppEvents.DELEGATE_PRINT_LOG);
-
-        reactContext.registerReceiver(uiBroadcastReceiver, filter1);
-        reactContext.registerReceiver(localBroadcastReceiver, filter2);
-        System.out.println("Registered broadcast receivers");
-    }
-
-    private void unRegisterBroadcastReceivers() {
-
-        try {
-            hasEventsRegistered = false;
-            reactContext.unregisterReceiver(uiBroadcastReceiver);
-            reactContext.unregisterReceiver(localBroadcastReceiver);
-            System.out.println("Un Registered broadcast receivers");
-
-        }
-        catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("ERROR IN stopService - " + e.getMessage());
         }
     }
 
@@ -150,4 +98,61 @@ public class LifeplusNativeModule extends ReactContextBaseJavaModule implements 
             System.out.println("SERVICE DISCONNECTED");
         }
     };
+
+    @ReactMethod
+    private void testEmit() {
+
+        if(this._service != null && this.isServiceBound) {
+            this._service.emitEventStart();
+        }
+    }
+
+    @Override
+    public void onHostResume() {
+
+    }
+
+    @Override
+    public void onHostPause() {
+
+    }
+
+    @Override
+    public void onHostDestroy() {
+        unRegisterBroadcastReceivers();
+    }
+
+    private void createAndRegisterBroadCastReceivers() {
+        this.uiBroadcastReceiver     = new UiBroadcastReceiver();
+        this.localBroadcastReceiver  = new LocalBroadcastReceiver();
+        System.out.println("Created broadcast receivers");
+        registerBroadcastReceivers();
+    }
+
+    private void registerBroadcastReceivers() {
+        IntentFilter filter1 = new IntentFilter();
+        filter1.addAction(AppEvents.START_BROADCAST);
+
+        IntentFilter filter2 = new IntentFilter();
+        filter2.addAction(AppEvents.DELEGATE_PRINT_LOG);
+
+        this.reactContext.registerReceiver(this.uiBroadcastReceiver, filter1);
+        this.reactContext.registerReceiver(this.localBroadcastReceiver, filter2);
+
+        this.hasEventsRegistered = true;
+        System.out.println("Registered broadcast receivers");
+    }
+
+    private void unRegisterBroadcastReceivers() {
+
+        try {
+            this.hasEventsRegistered = false;
+            this.reactContext.unregisterReceiver(this.uiBroadcastReceiver);
+            this.reactContext.unregisterReceiver(this.localBroadcastReceiver);
+            System.out.println("Un Registered broadcast receivers");
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

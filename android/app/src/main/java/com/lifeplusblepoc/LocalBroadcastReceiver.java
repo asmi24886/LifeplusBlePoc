@@ -4,17 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
-
 public class LocalBroadcastReceiver extends BroadcastReceiver {
-
-    ReactApplicationContext context = null;
-
-    public LocalBroadcastReceiver(ReactApplicationContext context) {
-        super();
-        this.context = context;
-    }
 
     @Override
     public void onReceive(Context _context, Intent intent) {

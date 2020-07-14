@@ -7,15 +7,18 @@ import com.facebook.react.bridge.ReactApplicationContext;
 
 public class BroadcasterThread extends Thread {
 
-    ReactApplicationContext context = null;
-
-    public BroadcasterThread(ReactApplicationContext context) {
-        super();
-    }
-
     @Override
     public void run() {
-        broadcastEvent();
+        int i = 1;
+        try {
+            while (i++ != 10) {
+                broadcastEvent();
+                Thread.currentThread().sleep(3000);
+            }
+            
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void broadcastEvent() {
