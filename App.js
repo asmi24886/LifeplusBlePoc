@@ -1,12 +1,18 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-trailing-spaces */
+/* eslint-disable keyword-spacing */
 /* eslint-disable no-alert */
 /* eslint-disable quotes */
 /* eslint-disable prettier/prettier */
-import React, {useEffect}from 'react';
+import React, {useEffect} from 'react';
+import { useSelector } from 'react-redux';
 import {StyleSheet, Text, View, TouchableOpacity, Image, NativeEventEmitter} from 'react-native';
-import {connect} from 'react-redux';
-import BleNative from './BleNative';
-
 import KeepAwake from 'react-native-keep-awake';
+
+import BleNative from './BleNative';
+import {BleEvents} from './AppEvents';
+
+import {setUiMessage} from './store';
 
 const styles = StyleSheet.create({
   container: {
@@ -31,29 +37,84 @@ const styles = StyleSheet.create({
   },
 });
 
+function testAPICall() {
+  fetch('https://reactnative.dev/movies.json', { method: 'GET'})
+  .then((response) => response.json())
+  .then((json) => {
+    console.log(json.movies);
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+}
+
 const EventManager = new NativeEventEmitter(BleNative);
 const EventListeners = {};
 EventListeners.printListener = null;
-
-const App = () => {
+EventListeners.bleListener = null;
+if (!EventListeners.printListener) {
+  EventListeners.printListener = EventManager.addListener("EVENT_PRINT_LOG", (event) => {
+    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ PRINT LOG EVENT RECEIVED FROM BACKEND");
+    console.log(event);
+    alert("Got event from backend Yaee -- " + new Date().getTime());
+    //setUiMessage("Current time is - " + new Date().getTime() + "");
+    //testAPICall();
+    
+  });
+}
+export default function App() {
 
   useEffect(() => {
     console.log(" ----------------- Component will mount ----------------------------");
-    EventListeners.printListener = EventManager.addListener("EVENT_PRINT_LOG", (event) => {
-      console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ PRINT LOG EVENT RECEIVED FROM BACKEND");
-    });
 
-    return function() {
-      console.log(" ----------------- Component will UN-mount ----------------------------");
-      EventListeners.printListener.remove();
-    };
+    // if (!EventListeners.printListener) {
+    //   EventListeners.printListener = EventManager.addListener("EVENT_PRINT_LOG", (event) => {
+    //     console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ PRINT LOG EVENT RECEIVED FROM BACKEND");
+    //     console.log(event);
+    //   });
+    // }
+
+    // if (!EventListeners.bleListener) {
+    //   EventListeners.bleListener = EventManager.addListener("EVENT_BLE", (event) => {
+    //     handleIncomingEvent(event);
+    //   });
+    // }
+
+    // return function() {
+    //   console.log(" ----------------- Component will UN-mount, event listners will get removed ----------------------------");
+
+    //   if(EventListeners.printListener) {
+    //     EventListeners.printListener.remove();
+    //     EventListeners.printListener = null;
+    //   }
+
+    //   if(EventListeners.printListener) {
+    //     EventListeners.bleListener.remove();
+    //     EventListeners.bleListener = null;
+    //   }
+      
+    // };
   });
+
+  let msg = useSelector((state) => {
+    
+    try {
+      return state.App.msg;
+    }
+    catch(e) {
+      console.log(e);
+    }
+
+    return "Initial Message";
+  });
+  
+  
 
   return (
     <View style={styles.container}>
       <KeepAwake />
       <View style={{...styles.view, backgroundColor: 'yellow', width: 400}}>
-        <Text>{"Here goes messages from backend"}</Text>
+        <Text>{msg}</Text>
       </View>
       <View style={styles.view}>
         <TouchableOpacity
@@ -69,44 +130,27 @@ const App = () => {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={()=>{emitEvent();}}>
+          onPress={emitEvent}>
           <Text style={styles.instructions}>Connect</Text>
         </TouchableOpacity>
 
-        {/* <TouchableOpacity
-          style={styles.button}
-          onPress={()=>{}}>
-          <Text style={styles.instructions}>Diconnect</Text>
-        </TouchableOpacity> */}
-
         <TouchableOpacity
           style={styles.button}
-          onPress={()=>{}}>
+          onPress={syncNow}>
           <Text style={styles.instructions}>Sync</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}
-          onPress={()=>{}}>
+          onPress={measureNow}>
           <Text style={styles.instructions}>Measure</Text>
         </TouchableOpacity>
-
-        {/* <TouchableOpacity
-          style={styles.button}
-          onPress={()=>{}}>
-          <Text style={styles.instructions}>Calibrate</Text>
-        </TouchableOpacity> */}
       </View>
     </View>
   );
 };
 
-const mapStateToProps = (store) => ({
-  heartBeat: store.App.heartBeat,
-});
-
 function startService() {
-  alert("Start Service requested");
   console.log("Start Service requested");
 
   try {
@@ -118,7 +162,6 @@ function startService() {
 }
 
 function stopService() {
-  alert("Stop Service requested");
   console.log("Stop Service requested");
 
   try {
@@ -129,8 +172,32 @@ function stopService() {
   }
 }
 
-function emitEvent() {
-  alert("EMIT EVENT EVENT_START_BROADCAST");
+async function emitEvent() {
+  // BleNative.isServiceAlive((val) => {
+  //   alert("IS SERVICE ALIVE - " + val);
+  // });
+
   BleNative.testEmit();
+
 }
-export default connect(mapStateToProps)(App);
+
+async function connectBle() {
+  let data = await BleNative.send(BleEvents.CONNECT);
+  console.log(data);
+}
+
+async function measureNow() {
+  let data = await BleNative.send(BleEvents.MEASURE);
+  console.log(data);
+}
+
+async function syncNow() {
+  let data = await BleNative.send(BleEvents.SYNC);
+  console.log(data);
+}
+
+function handleIncomingEvent(event) {
+  console.log("<============================= Received Incoming event =======================>");
+  console.log(event);
+  setUiMessage(event.data);
+}

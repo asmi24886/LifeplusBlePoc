@@ -3,18 +3,18 @@ import {createStore, combineReducers} from 'redux';
 import {createAction, handleActions} from 'redux-actions';
 
 const appInitialState = {
-  heartBeat: false,
+  msg: 'No message to display',
 };
 
-const SET_HEART_BEAT = 'SET_HEART_BEAT';
-export const setHeartBeat = createAction(SET_HEART_BEAT);
+const SET_UI_MESSAGE = 'SET_UI_MESSAGE';
+export const setUiMessage = createAction(SET_UI_MESSAGE);
 
 const App = handleActions(
   {
-    [SET_HEART_BEAT]: (state, {payload}) => ({
-      ...state,
-      heartBeat: payload,
-    }),
+    [SET_UI_MESSAGE]: (state, {payload}) => {
+      console.log(state);
+      return payload ? {msg : payload} : {...state};
+    },
   },
   appInitialState,
 );

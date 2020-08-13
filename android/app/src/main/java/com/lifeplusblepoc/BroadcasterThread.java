@@ -9,17 +9,19 @@ public class BroadcasterThread extends Thread {
 
     @Override
     public void run() {
-//        int i = 1;
-//        try {
-//            while (i++ != 10) {
-//                broadcastEvent();
-//                Thread.currentThread().sleep(3000);
-//            }
-//
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-        broadcastEvent();
+        int i = 1;
+
+        //SEND THIS BROADCAST EVENT 3 times just to check whether this is possible or not
+        try {
+            while (i++ != 3) {
+                broadcastEvent();
+                Thread.currentThread().sleep(3000);
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //broadcastEvent();
     }
 
     public void broadcastEvent() {
